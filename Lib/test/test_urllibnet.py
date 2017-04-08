@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from test import test_support
 
@@ -213,6 +214,35 @@ class urlopen_HttpsTests(unittest.TestCase):
         self.assertIn("Python", response.read())
 
 
+class urlopen_FTPTest(unittest.TestCase):
+    # TODO: https://github.com/python/pythondotorg/issues/1069
+    # Use a resource hosted at python.org
+    FTP_TEST_FILE = 'ftp://ftp.debian.org/debian/README'
+
+    def test_multiple_ftp_retrieves(self):
+
+        with test_support.transient_internet(self.FTP_TEST_FILE):
+            try:
+                for _ in range(3):
+                    urllib.FancyURLopener().retrieve(
+                            self.FTP_TEST_FILE,
+                            tempfile.NamedTemporaryFile().name)
+
+            except IOError as e:
+                self.fail("Failed FTP retrieve while accessing ftp url "
+                          "multiple times.\n Error message was : %s" % e)
+
+    def test_multiple_ftp_urlopen_same_host(self):
+        with test_support.transient_internet(self.FTP_TEST_FILE):
+            try:
+                for _ in range(3):
+                    fp = urllib.urlopen(self.FTP_TEST_FILE)
+                    # closing  fp is not required.
+            except IOError as e:
+                self.fail("Failed FTP binary file open." 
+                          "Error message was: %s" % e)
+
+
 def test_main():
     test_support.requires('network')
     with test_support.check_py3k_warnings(
@@ -220,7 +250,8 @@ def test_main():
         test_support.run_unittest(URLTimeoutTest,
                                   urlopenNetworkTests,
                                   urlretrieveNetworkTests,
-                                  urlopen_HttpsTests)
+                                  urlopen_HttpsTests,
+                                  urlopen_FTPTest)
 
 if __name__ == "__main__":
     test_main()

@@ -42,6 +42,8 @@ Extension Modules
 Library
 -------
 
+- bpo-27973 - Fix for urllib.urlretrieve() failing on second ftp transfer.
+
 - bpo-27863: Fixed multiple crashes in ElementTree caused by race conditions
   and wrong types.
 
